@@ -13,7 +13,7 @@ services:
       - DB_PASS=pass
       - DB_HOST=iati-refresher-postgres-dev
       - DB_NAME=refresher
-      - DB_PORT=5432
+      - DB_PORT=${POSTGRES_DB_PORT}
       - DB_SSL_MODE=disable
       - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://iati-refresher-azurite:10000/devstoreaccount1;QueueEndpoint=http://iati-refresher-azurite:10001/devstoreaccount1;TableEndpoint=http://iati-refresher-azurite:10002/devstoreaccount1;
       - AZURE_STORAGE_CONTAINER_SOURCE=source
@@ -28,7 +28,7 @@ services:
       - FLATTENER_API_URL=http://192.168.0.1:7071/api/pvt/flatten/activities
       - FLATTENER_KEY_NAME=x
       - FLATTENER_KEY_VALUE=y
-      - SOLR_API_URL=http://iati-refresher-solr:8983/solr/
+      - SOLR_API_URL=http://iati-refresher-solr:${SOLR_PORT}/solr/
       - SOLR_USER=x
       - SOLR_PASSWORD=y
       - LOG_LEVEL=debug
@@ -36,11 +36,14 @@ services:
   iati-refresher-postgres-dev:
     image: postgres:15
     ports:
-      - "5432:5432"
+      - "${POSTGRES_DB_PORT}:${POSTGRES_DB_PORT}"
+    expose:
+      - "${POSTGRES_DB_PORT}"
     environment:
       - POSTGRES_PASSWORD=pass
       - POSTGRES_USER=refresh
       - POSTGRES_DB=refresher
+      - PGPORT=${POSTGRES_DB_PORT}
       - PGDATA=/var/lib/postgresql/data/pgdata
     volumes:
       - iati-refresher-dev-db:/var/lib/postgresql/data
@@ -58,7 +61,9 @@ services:
   iati-refresher-solr:
     image: solr
     ports:
-      - 8983:8983
+      - ${SOLR_PORT}:8983
+    expose:
+      - ${SOLR_PORT}
     volumes:
       - iati-refresher-solr:/var/solr
       - ./datastore-solr-configs:/datastore-solr-configs
