@@ -135,7 +135,7 @@ psql -h localhost -U refresh -W refresher -p 5437
 
 #### Connect to Solr
 
-Visit http://localhost:8983/solr/#/  
+Visit http://localhost:8989/solr/#/  
  
 
 
