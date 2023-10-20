@@ -28,7 +28,7 @@ services:
       - FLATTENER_API_URL=http://192.168.0.1:7071/api/pvt/flatten/activities
       - FLATTENER_KEY_NAME=x
       - FLATTENER_KEY_VALUE=y
-      - SOLR_API_URL=http://iati-refresher-solr:8983/solr/
+      - SOLR_API_URL=http://iati-refresher-solr:${SOLR_PORT}/solr/
       - SOLR_USER=x
       - SOLR_PASSWORD=y
       - LOG_LEVEL=debug
@@ -61,7 +61,9 @@ services:
   iati-refresher-solr:
     image: solr
     ports:
-      - 8983:8983
+      - ${SOLR_PORT}:8983
+    expose:
+      - ${SOLR_PORT}
     volumes:
       - iati-refresher-solr:/var/solr
       - ./datastore-solr-configs:/datastore-solr-configs

@@ -16,6 +16,7 @@ az storage container create --name lake
 echo "Running az storage container create --name validator-adhoc"
 az storage container create --name validator-adhoc
 
+echo "Creating Solr cores for activities, transactions, and budgets"
 docker compose exec  -it  iati-refresher-solr  solr create_core -c activity_solrize -d /datastore-solr-configs/configsets/activity/conf
 docker compose exec  -it  iati-refresher-solr  solr create_core -c transaction_solrize -d /datastore-solr-configs/configsets/transaction/conf
 docker compose exec  -it  iati-refresher-solr  solr create_core -c budget_solrize -d /datastore-solr-configs/configsets/budget/conf

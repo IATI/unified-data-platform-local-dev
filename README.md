@@ -9,20 +9,19 @@ You will need:
 * Git and Github
 * Azure command line tools
 
-You will also need to:
+And you will need to:
 
-* Stop existing PostgreSQL service if it runs on port 5432 (or alter Postgres port in dev config--see below)
-* Stop any other instances of Azurite and Solr
+* Stop any other instances of Azurite
 
 ## Installation and initial setup
 
-### Clone this repository
+### 1. Clone this repository
 
 Clone this repository
 
 Change into the directory it was cloned into
 
-### Checkout other local code
+### 2. Checkout other local code
 
 Check out the other needed code (in the directory in which you cloned this repository):
 
@@ -34,21 +33,16 @@ git clone git@github.com:IATI/refresher.git refresher
 (We don't use Git Submodules here cos we don't want to lock commit, you may want the latest version or a specific version, 
 depending on what you are developing.)
 
-### Change PostgreSQL port, if needed
 
-If you want to run this setup alongside an existing instance of PostgreSQL running on the standard PG port (5432), change the 
-port value in `.env` to an unused port.
-
-
-### Start docker compose
+### 3. Start docker compose
 
 ```
 docker compose up
 ```
 
-The last step requires this to be running.
+The next step in initial setup requires this to be running.
 
-### Setup Azurite storage containers and Solr
+### 4. Setup Azurite storage containers and Solr
 
 To setup both the Azure storage and Solr, run the following from outside docker:
 
@@ -56,20 +50,7 @@ To setup both the Azure storage and Solr, run the following from outside docker:
 ./first_time_setup.sh
 ```
 
-This script runs the following commands:
-
-```
-export AZURE_STORAGE_CONNECTION_STRING="DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://localhost:10000/devstoreaccount1;QueueEndpoint=http://localhost:10001/devstoreaccount1;TableEndpoint=http://localhost:10002/devstoreaccount1;"
-az storage container create --name source
-az storage container create --name clean
-az storage container create --name lake
-az storage container create --name validator-adhoc
-docker compose exec  -it  iati-refresher-solr  solr create_core -c activity_solrize -d /datastore-solr-configs/configsets/activity/conf
-docker compose exec  -it  iati-refresher-solr  solr create_core -c transaction_solrize -d /datastore-solr-configs/configsets/transaction/conf
-docker compose exec  -it  iati-refresher-solr  solr create_core -c budget_solrize -d /datastore-solr-configs/configsets/budget/conf
-```
-
-### Check setup
+### 5. Check setup
 
 To check the setup, we can use the Azure cli tools. The Azure cli tools require the `AZURE_STORAGE_CONNECTION_STRING`
 environment variable to be set. This can be done by running the following command on the host machine (outside docker):
@@ -95,9 +76,9 @@ source                           2023-10-10T19:23:12+00:00
 validator-adhoc                  2023-10-10T19:31:16+00:00
 ```
 
-You can check Solr is running by visiting http://localhost:8983/solr/#/
+You can check Solr is running by visiting http://localhost:8989/solr/#/ 
 
-
+**Note: if you need to, you can change the ports for Postgres and Solr by editing `.env`**
 
 ## Usage
 
@@ -109,18 +90,19 @@ Start the refresher with:
 docker compose up
 ```
 
-### Running the `az` command
+### General commands
 
-To run the Azure `az` command (e.g., to inspect/debug the Azurite storage containers), the `AZURE_STORAGE_CONNECTION_STRING` 
-needs to be set in the current terminal window.
+#### The `az` command
 
-Use the `source` command to do this in any terminal where you want to run `az`:
+You can use the Azure `az` command to (e.g.) inspect/debug the Azurite storage containers. To do so, the
+`AZURE_STORAGE_CONNECTION_STRING` needs to be set in the current terminal window. Use the `source` command to do 
+this in any terminal where you want to run `az`:
 
 ```
 source ./set_azure_dev_env_var.sh
 ```
 
-### To get a shell in the refresher container to run commands in
+#### To get a shell in the refresher container to run commands in
 
 To run first one:
 
@@ -134,61 +116,69 @@ To get a second shell into this one (if you want to inspect a running process):
 docker compose exec iati-refresher-app bash
 ```
 
-The source code for the refresh is in `/work/refresher` so you probably want to:
+The source code for the refresh is in `/work/refresher`
+
+#### Connect to the Refresher's DB
+
+You can connect to the database (from outside docker) with any client using the following details:
+
+DB name: `refresher`  
+DB user: `refresh`  
+DB pass: `pass`  
+DB Port: `5437` (although changeable via `.env`)  
+
+For example, to connect using `psql` the command is:
 
 ```
-cd /work/refresher
+psql -h localhost -U refresh -W refresher -p 5437
 ```
 
+#### Connect to Solr
 
-### Connect to the Refresher's DB
-
-From outside docker (append `-p PORTNUM` if you changed the port number):
-
-```
-psql -h localhost -U refresh -W refresher
-```
-
-Password is pass
+Visit http://localhost:8983/solr/#/  
+ 
 
 
-### Connect to Solr
+### Running the Unified Data Platform: Refresh stage
 
-http://localhost:8983/solr/#/
+#### Optional (depending on dev task)
 
+The Refresher downloads a lot of data; to limit the amount of data it downloads and processes during local development, 
+the  following changes can be made on the host machine:
 
-
-### Run stage: Refresh
-
-To run the Refresher locally, we make a few changes to the code to stop it downloading everything. On the host machine, change the following:
-
-src/library/refresher.py
-* `get_paginated_response` - change both return statements to just say return retval
-* `sync_publishers` - change the call to `get_paginated_response` to get only 10 responses (by changing 1000 to 10)
+In `src/library/refresher.py`, change:
+* `get_paginated_response` - alter both return statements to just say `return retval`
 * `fetch_datasets` - delete the while loop
 
-Or to get to one publisher only
+Then, either, to fetch the data for just 10 publishers, change (still in `src/library/refresher.py`): 
+* `sync_publishers` - change the call to `get_paginated_response` to get only 10 responses (by changing 1000 to 10)
+
+Or, to fetch the data for a specified publisher, change:
 * `sync_publishers` - after `for publisher_name in publisher_list:` add `if publisher_name != "ec-echo": continue`
+The value `ec-echo` can be changed to any publisher name, if you want the data for a specific publisher.
 
-Next, connect to the `iati-refresher-app` docker container (using `run` command above, or `exec` command if already running).
+#### Refresh stage
 
-Change into the `/work/refresher` directory.
+Connect to the `iati-refresher-app` docker container (using `run` command above, or `exec` command if already
+running).
 
-You can then run (on the Refresher container):
+Change into the `/work/refresher` directory, and run the Refresher with the following command:
+
 ```
 python src/handler.py -t refresh
 ```
 
-This command will fetch 10 publishers (if you altered the code as described above) and documents associated with those publishers.
-(If it is the first run through it will create the database structure). 
+This command will fetch the list of publishers and the list of documents associated with those publishers from the
+Registry. (If it is the first run it will create the database structure). 
 
 After running, you should be able to connect to the database and see some data in the `document` and `publisher` tables. (There will
 probably be a lot of `insert or update on table "document" violates foreign key constraint "related_publisher"` errors 
 but as long as there is some data in the `document` and `publisher` tables you have something to work with.)
 
+#### Download XML stage
 
-The following command (to be run on the Refresher container) will attempt to download the
-documents in the `document` table:
+The following command (also to be run on the Refresher container) will attempt to download the
+documents that are listed in the `document` table:
 
 ```
 python src/handler.py -t reload
@@ -209,7 +199,7 @@ az storage blob download  --account-name devstoreaccount1   --container-name sou
 This will save the XML in `FILENAME.xml`; all being well, this should be an IATI XML file.
 
 
-### Run stage: Validate
+### Running the Unified Data Platform: Validate Stage
 
 Install and set up https://github.com/IATI/js-validator-api
 
@@ -248,14 +238,14 @@ If you see the following log messages:
 
 Edit `src/library/validate.py`, search for the 2 code blocks with `Skipping Schema Invalid file for Full Validation until` and remove them.
 
-## Run stage: Clean
+### Running the Unified Data Platform: Clean
 
 ```
 python src/handler.py -t  copy_valid
 python src/handler.py -t  clean_invalid
 ```
 
-## Run stage: Flatten
+### Running the Unified Data Platform: Flatten
 
 Get https://github.com/IATI/iati-flattener
 
@@ -274,7 +264,7 @@ python src/handler.py -t flatten
 
 
 
-## Run stage: Lakify
+### Running the Unified Data Platform: Lakify
 
 ```
 python src/handler.py -t lakify
@@ -282,7 +272,7 @@ python src/handler.py -t lakify
 
 
 
-## Run stage: Solrize
+### Running the Unified Data Platform: Solrize
 
 
 ```
