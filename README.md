@@ -118,6 +118,10 @@ docker compose exec iati-refresher-app bash
 
 The source code for the refresh is in `/work/refresher`
 
+#### Busybox
+
+The refresher docker image (built from `app.Dockerfile`) includes an installation of [busybox](https://www.busybox.net/); this provides a set of basic shell tools which may aid in development (e.g. allowing inspection of processes, log files, etc).
+
 #### Connect to the Refresher's DB
 
 You can connect to the database (from outside docker) with any client using the following details:
