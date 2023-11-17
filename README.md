@@ -152,15 +152,20 @@ The Refresher downloads a lot of data; to limit the amount of data it downloads 
 the  following changes can be made on the host machine:
 
 In `src/library/refresher.py`, change:
+
+To get limited resources:
 * `get_paginated_response` - alter both return statements to just say `return retval`
 * `fetch_datasets` - delete the while loop
-
-Then, either, to fetch the data for just 10 publishers, change (still in `src/library/refresher.py`): 
 * `sync_publishers` - change the call to `get_paginated_response` to get only 10 responses (by changing 1000 to 10)
 
-Or, to fetch the data for a specified publisher, change:
-* `sync_publishers` - after `for publisher_name in publisher_list:` add `if publisher_name != "ec-echo": continue`
-The value `ec-echo` can be changed to any publisher name, if you want the data for a specific publisher.
+Or, to fetch the data for specific publishers only change:
+* `sync_publishers` - after `for publisher_name in publisher_list:` add `if publisher_name not in ['usaid', 'sdc_ch']: continue`
+The values in the list can be changed to any publisher name, if you want the data for a specific publisher.
+
+Or, to fetch the data for specific documents only change:
+* `sync_documents` - after `for dataset in all_datasets:` add `if dataset['name'] not in ['usaid-jm','sdc_ch-210426']: continue`
+The values in the list can be changed to any document name, if you want the data for a specific document.
+The documents you select must be from publishers that are loaded; either by loading all publishers or by loading the correct publishers in the above step.
 
 #### Refresh stage
 
