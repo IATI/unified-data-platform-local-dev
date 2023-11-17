@@ -213,7 +213,7 @@ This will save the XML in `FILENAME.xml`; all being well, this should be an IATI
 
 Install and set up https://github.com/IATI/js-validator-api
 
-Your .env should these changes (make a github classic access token with no special scopes selected) (get VALIDATOR_SERVICES* from keypass):
+Your .env should these changes (make a github Fine-grained personal access token with read-only access) (get VALIDATOR_SERVICES* from keypass):
 ```
 REDIS_HOSTNAME=redis
 BASIC_GITHUB_TOKEN=xxxxxxxx
