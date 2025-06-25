@@ -13,7 +13,7 @@ services:
       - DB_NAME=refresher
       - DB_PORT=${POSTGRES_DB_PORT}
       - DB_SSL_MODE=disable
-      - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://iati-refresher-azurite:10000/devstoreaccount1;QueueEndpoint=http://iati-refresher-azurite:10001/devstoreaccount1;TableEndpoint=http://iati-refresher-azurite:10002/devstoreaccount1;
+      - AZURE_STORAGE_CONNECTION_STRING=DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://iati-refresher-azurite:13000/devstoreaccount1;QueueEndpoint=http://iati-refresher-azurite:13001/devstoreaccount1;TableEndpoint=http://iati-refresher-azurite:13002/devstoreaccount1;
       - AZURE_STORAGE_CONTAINER_SOURCE=source
       - AZURE_STORAGE_CONTAINER_CLEAN=clean
       - ACTIVITIES_LAKE_CONTAINER_NAME=lake
